@@ -1,59 +1,58 @@
-let canvas = document.getElementById('cnv');
-let ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-var offsetX, offsetY;
+let cnv = document.getElementById('cnv');
+let ctx = cnv.getContext('2d');
+cnv.width = window.innerWidth;
+cnv.height = window.innerHeight;
+
+let offsetX = 0, offsetY = 0;
+let start = null;
 
 function draw() {
     let step = 40;
-    let left = 0.5 - Math.ceil(canvas.width / step) * step;
-    let top = 0.5 - Math.ceil(canvas.height / step) * step;
-    let right = 2*canvas.width;
-    let bottom = 2*canvas.height;
-    ctx.clearRect(left, top, right - left, bottom - top);
+    let left = -offsetX % step;  
+    let top = -offsetY % step;  
+    let right = cnv.width;
+    let bottom = cnv.height;
+    ctx.clearRect(0, 0, cnv.width, cnv.height);
     ctx.beginPath();
+
     for (let x = left; x < right; x += step) {
-        ctx.moveTo(x, top);
-        ctx.lineTo(x, bottom);
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, cnv.height);
     }
     for (let y = top; y < bottom; y += step) {
-        ctx.moveTo(left, y);
-        ctx.lineTo(right, y);
+        ctx.moveTo(0, y);
+        ctx.lineTo(cnv.width, y);
     }
     ctx.strokeStyle = "#888";
     ctx.stroke();
 }
 
-
-let start;
 const getPos = (e) => ({
-    x: e.clientX - canvas.offsetLeft,
-    y: e.clientY - canvas.offsetTop 
+    x: e.clientX,
+    y: e.clientY
 });
 
-const reset = (dx, dy) => {
-    start = null;
-    ctx.setTransform(1, 0, 0, 1, dx, dy);
-    draw();
-}
-
-canvas.addEventListener("mousedown", e => {
-    reset(e.clientX - offsetX, e.clientY - offsetY);
+cnv.addEventListener("mousedown", e => {
     start = getPos(e);
-    offsetX = e.offsetX;
-    offsetY = e.offsetY;
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
 });
 
-canvas.addEventListener("mouseup", reset);
-canvas.addEventListener("mouseleave", reset);
-
-canvas.addEventListener("mousemove", e => {
+function onMouseMove(e) {
     if (!start) return;
     let pos = getPos(e);
 
-    ctx.translate(pos.x - start.x, pos.y - start.y);
-    draw();
+    offsetX -= pos.x - start.x; 
+    offsetY -= pos.y - start.y;
     start = pos;
-});
 
-draw(); //first render
+    draw();
+}
+
+function onMouseUp() {
+    start = null;
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", onMouseUp);
+}
+
+draw(); // First render
