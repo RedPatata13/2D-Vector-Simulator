@@ -33,7 +33,7 @@ const getPos = (e) => ({
 
 const reset = (dx, dy) => {
     start = null;
-    ctx.setTransform(1, 0, 0, 1, dx, 1);
+    ctx.setTransform(1, 0, 0, 1, dx, dy);
     draw();
 }
 
